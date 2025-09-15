@@ -42,6 +42,7 @@ export const validation = (schema: SchemaType) => {
 export const generalField = {
   username: z.string().min(2).max(20),
   email: z.string().email(),
+  otp: z.string().regex(/^\d{6}$/),
   password: z
     .string()
     .regex(
@@ -49,4 +50,7 @@ export const generalField = {
       "Invalid password"
     ),
   confirmPassword: z.string(),
+    phone: z.string().regex(/^01[0-2,5]\d{8}$/, "Invalid Egyptian phone number"),
+     id: z.string().regex(/^[0-9a-fA-F]{24}$/, "Invalid ObjectId"),
+       token: z.string().min(10, "Invalid token")
 };
