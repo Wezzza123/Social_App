@@ -11,7 +11,7 @@ import type {
     IResendForgetPasswordOTP,
     ISignupWithGmail
 } from "./auth.dto";
-import { UserRepository } from "../../DataBase/repository/user.repository";
+import { UserRepository } from "../../DataBase/repository";
 import { HUserDocument, ProviderEnum, UserModel } from "../../DataBase/models/user.model";
 import { ApplicationException, BadRequestException, ConflictException, NotFoundException } from "../../utils/response/error.response";
 import { compareHash, generateHash } from "../../utils/security/hash.security";
@@ -64,9 +64,9 @@ class AuthenticationServices {
             data: [{
                 userName,
                 email,
-                password: await generateHash(password),
+                password,
                 gender,
-                confirmEmailOTP: await generateHash(OTPCode.toString()),
+                confirmEmailOTP: `${OTPCode.toString()}`,
                 confirmEmailSentTime: new Date(),
                 ...(phone ? { phone } : {})
             }]

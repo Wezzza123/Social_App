@@ -8,7 +8,9 @@ import {
     ProjectionType,
     QueryOptions,
     RootFilterQuery,
-    UpdateQuery
+    UpdateQuery, 
+    Types,
+    DeleteResult,
 } from "mongoose";
 import { NotFoundException } from "../../utils/response/error.response";
 
@@ -21,6 +23,13 @@ export abstract class DataBaseRepository<TDocument> {
     }): Promise<HydratedDocument<TDocument>[] | undefined> {
         return await this.model.create(data, options)
     }
+     async insertMany({ data,}: {
+        data: Partial<TDocument>[]
+    }): Promise<HydratedDocument<TDocument>[] > {
+      return (await this.model.insertMany(data)) as HydratedDocument<TDocument>[];
+
+    }
+
 
     async findOne({
         filter,
@@ -42,6 +51,27 @@ export abstract class DataBaseRepository<TDocument> {
 
         return await doc.exec();
     }
+    async findById({
+        id,
+        select,
+        options
+    }: {
+        id: Types.ObjectId,
+        select?: ProjectionType<TDocument> | null,
+        options?: QueryOptions<TDocument> | null
+    }): Promise<
+        HydratedDocument<FlattenMaps<TDocument>>
+        | HydratedDocument<TDocument>
+        | null> {
+
+        const doc = this.model.findOne(id).select(select || "");
+        if (options?.lean) {
+            doc.lean(options.lean)
+        }
+
+        return await doc.exec();
+    }
+
 
     async find({
         filter = {},
@@ -103,6 +133,27 @@ export abstract class DataBaseRepository<TDocument> {
         return updatedDoc;
     }
 
+async findOneAndUpdate({
+    filter,
+    updateData, 
+    options = {new :true}
+}:{
+       filter: RootFilterQuery<TDocument>,
+        updateData: UpdateQuery<TDocument>,
+        options: QueryOptions<TDocument> | null 
+    }): Promise<HydratedDocument<TDocument> | Lean<TDocument> |  null > {
+        
+        const updatedDoc = await this.model.findOneAndUpdate(
+            filter,
+            {
+                ...updateData,
+                $inc: { __v: 1 }
+            },
+            options
+        )
+      
+}
+
     async updateMany(
         filter: FilterQuery<TDocument>,
         updateData: UpdateQuery<TDocument>,
@@ -111,10 +162,29 @@ export abstract class DataBaseRepository<TDocument> {
         return this.model.updateMany(filter, updateData, options).exec();
     }
 
-    async deleteOne(
-         filter: FilterQuery<TDocument>
-    ){
-        return this.model.deleteOne(filter)
+    async findOneAndDelete({
+        filter,
+    }:{
+        filter:RootFilterQuery<TDocument>
+    }):Promise<HydratedDocument<TDocument> | null>{
+        return this.model.findOneAndDelete(filter)
     }
 
-}
+
+    async deleteOne({
+         filter,
+     }:{
+        filter: RootFilterQuery<TDocument>
+     }):Promise<DeleteResult>{
+return this.model.deleteOne(filter)
+     }
+     async deleteMany({
+         filter,
+     }:{
+        filter: RootFilterQuery<TDocument>
+     }):Promise<DeleteResult>{
+return this.model.deleteMany(filter)
+     }
+    }
+    
+

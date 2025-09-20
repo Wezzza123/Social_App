@@ -1,6 +1,7 @@
 import { Request, Response, NextFunction } from "express";
 import { z, ZodType, ZodError } from "zod";
 import { BadRequestException } from "../utils/response/error.response";
+import { Types } from "mongoose";
 
 type KeyReqType = keyof Request; // body | params | query | headers ...
 type SchemaType = Partial<Record<KeyReqType, ZodType>>;
@@ -9,26 +10,28 @@ export const validation = (schema: SchemaType) => {
   return (req: Request, res: Response, next: NextFunction) => {
     const validationErrors: Array<{
       message: string;
-      path: string | number | symbol | undefined;
+      path: (string | number | symbol)[];
     }> = [];
 
     for (const key of Object.keys(schema) as KeyReqType[]) {
       const validator = schema[key];
       if (!validator) continue;
 
-      const validationResult = validator.safeParse(req[key]);
+      if (req.file) {
+        req.body.attachment = req.file;
+      }
 
+      const validationResult = validator.safeParse(req[key]);
       if (!validationResult.success) {
         const errors = validationResult.error as ZodError;
-
         errors.issues.forEach((issue) => {
           validationErrors.push({
             message: issue.message,
-            path: issue.path[0],
+            path: issue.path,
           });
         });
       }
-    } // ✅ قفلت اللوب هنا
+    }
 
     if (validationErrors.length) {
       throw new BadRequestException("Validation Error", { validationErrors });
@@ -50,7 +53,28 @@ export const generalField = {
       "Invalid password"
     ),
   confirmPassword: z.string(),
-    phone: z.string().regex(/^01[0-2,5]\d{8}$/, "Invalid Egyptian phone number"),
-     id: z.string().regex(/^[0-9a-fA-F]{24}$/, "Invalid ObjectId"),
-       token: z.string().min(10, "Invalid token")
+  phone: z.string().regex(/^01[0-2,5]\d{8}$/, "Invalid Egyptian phone number"),
+  id: z.string().refine(
+    (data) => Types.ObjectId.isValid(data),
+    { message: "Invalid ObjectId format" }
+  ),
+  token: z.string().min(10, "Invalid token"),
+  file: (mimetypes: string[]) => {
+    return z
+      .strictObject({
+        fieldname: z.string(),
+        originalname: z.string(),
+        encoding: z.string(),
+        mimetype: z.enum(mimetypes as [string, ...string[]]),
+        buffer: z.any().optional(),
+        path: z.string().optional(),
+        size: z.number(),
+      })
+      .refine(
+        (data) => {
+          return data.buffer || data.path;
+        },
+        { error: "neither path or buffer is available" }
+      );
+  },
 };

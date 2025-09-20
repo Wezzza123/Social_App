@@ -4,7 +4,7 @@ import { HUserDocument, RoleEnum, UserModel } from "../../DataBase/models/user.m
 import { BadRequestException, InvalidTokenException, UnAuthorizedException } from "../response/error.response";
 import { UserRepository } from "../../DataBase/repository/user.repository";
 import { v4 as uuid } from "uuid"
-import { TokenRepository } from "../../DataBase/repository/token.repository";
+import { TokenRepository } from "../../DataBase/repository";
 import { HTokenDocument, TokenModel } from "../../DataBase/models/token.model";
 
 interface IGenerateToken {

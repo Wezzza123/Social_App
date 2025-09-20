@@ -3,9 +3,9 @@ import express from "express";
 import type { Request, Response } from "express";
 
 // Import Third Party Middleware
-import cors from "cors";
+import cors from "cors"
 import { rateLimit } from "express-rate-limit";
-import helmet from "helmet";
+import helmet from "helmet"
 
 // Setup Env Config
 import { resolve } from "node:path";
@@ -13,10 +13,11 @@ import { config } from "dotenv";
 config({ path: resolve("./config/.env.development") });
 
 // Import Modules Routers
-import authRouter from "./modules/auth/auth.controller";
-import usersRouter from "./modules/user/user.controller";
+import{userRouter , authRouter, postRouter} from './modules'
+
 import { glopalErrorHandler } from "./utils/response/error.response";
 import { connectDB } from "./DataBase/db.connection";
+import { HUserDocument, UserModel } from "./DataBase/models/user.model";
 
 
 
@@ -45,6 +46,86 @@ export default async function bootstrap(): Promise<void> {
     // DataBase
     await connectDB();
 
+    //Hooks
+    // Hooks
+async function test() {
+    try {
+        const user = new UserModel({
+        username:"moaz raslan",
+        email:`${Date.now()}@gmail.com`,
+        password:"456585"
+        });
+        await user.save({validateBeforeSave:true})
+        user.lastname="lo l lol"
+        user.email="gdsgadja6646@gmail.com"
+        await user.save()
+        //const userModel= new UserRepository(UserModel)
+        //const user = await userModel.findOne({filter: {}}) as HUserDocument
+        //await user.updateOne({})
+        
+        //const userModel= new UserRepository(UserModel)
+        //const user = await userModel.findOne({filter: {}}) as HUserDocument
+        //await user.deleteOne({})
+
+        
+        //const userModel= new UserRepository(UserModel)
+        //const user = await userModel.findOne({filter: {}, select:"extra"}) a
+        //await user?.save()
+        
+        //const userModel= new UserRepository(UserModel)
+        //const user = (await userModel.findOne({
+       // filter: {gender:GenderEnum.female, paranoid:false},
+    //})) as HUserDocument
+    //console.log({result:user});
+
+
+    //const userModel = new (UserModel)
+    //const user = await userModel.findByIdAndUpdate({
+   // id:"456dgdhshd7846ehe" as unknown asTypes.ObjectId,
+   //update:{
+    //freezedAt: newDate()
+    //console.log({result:user});
+   //}})
+
+
+    //const userModel = new (UserModel)
+    //const user = await userModel.deleteOne({
+   // filte:{
+// id:"434fdfe67shd7846ehe" as unknown asTypes.ObjectId,
+  //  })
+    //console.log({result:user});
+   //}
+    
+   
+   
+   
+    //const userModel = new (UserModel)
+    //const user = await userModel.findOneAndDelete({
+   // filte:{
+// id:"434fdfe67shd7846ehe" as unknown asTypes.ObjectId,
+  //  })
+    //console.log({result:user});
+   //}
+   
+  //const userModel= new UserRepository(UserModel)  
+//const user = await userModel.insertMany({
+    //data:{
+      //  username: "moaz raslan",
+    //    email: `${data.now()}@gmail.com`,
+  //      password:"4534563"
+ //   }
+//})
+
+    
+
+
+
+    } catch (error) {
+        console.error(error);
+    }
+}
+
+
     // AppLcation Routing 
 
     // Main Router
@@ -60,28 +141,8 @@ export default async function bootstrap(): Promise<void> {
     app.use("/auth", authRouter);
 
     // Users Router
-    app.use("/users", usersRouter);
-
-    // Get Asset From S3 :
-    //  ملهاش لازمة حالياً 
-    //  انا برجع لينك الصورة دايركت مع اليوزر في البروفايل
-    // أبقى اشغلها لما أحتاجها
-
-
-    // app.get("/images/*path", async (req, res): Promise<void> => {
-    //     const { path } = req.params as { path: string[] };
-    //     const Key = path.join("/");
-    //     // const s3Response = await getAsset({ Key });
-    //     // if (!s3Response?.Body) {
-    //     //     throw new BadRequestException("Fail To Fetch This Resourse");
-    //     // }
-    //     // res.setHeader(
-    //     //     "Content-Type",
-    //     //     s3Response.ContentType || "application/octet-stram"
-    //     // );
-    //     // return s3CreateWriteStram(s3Response.Body as NodeJS.ReadableStream, res);
-    //     res.json({key})
-    // })
+    app.use("/users", userRouter);
+    app.use("/post", postRouter)
 
 
     // Glopal Error Handler
