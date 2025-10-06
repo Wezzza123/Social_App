@@ -122,7 +122,7 @@ export class TokenService {
 
     }
 
-    decodeToken = async ({ authorization,
+       decodeToken = async({ authorization,
         tokenType = TokenTypeEnum.accses }:
         { authorization: string, tokenType: TokenTypeEnum }) => {
 

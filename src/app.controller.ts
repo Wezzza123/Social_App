@@ -1,4 +1,4 @@
-// Import Express And Express Types
+``// Import Express And Express Types
 import express from "express";
 import type { Request, Response } from "express";
 
@@ -15,10 +15,11 @@ config({ path: resolve("./config/.env.development") });
 // Import Modules Routers
 import{userRouter , authRouter, postRouter} from './modules'
 
-import { glopalErrorHandler } from "./utils/response/error.response";
+import { BadRequestException, glopalErrorHandler } from "./utils/response/error.response";
 import { connectDB } from "./DataBase/db.connection";
 import { HUserDocument, UserModel } from "./DataBase/models/user.model";
-
+import { intializeIo } from "./modules/gateway/gateway";
+import { chatRouter } from "./modules/chat";
 
 
 // App Start Point
@@ -46,7 +47,7 @@ export default async function bootstrap(): Promise<void> {
     // DataBase
     await connectDB();
 
-    //Hooks
+
     // Hooks
 async function test() {
     try {
@@ -143,10 +144,12 @@ async function test() {
     // Users Router
     app.use("/users", userRouter);
     app.use("/post", postRouter)
+    app.use("./chat", chatRouter)
 
 
     // Glopal Error Handler
     app.use(glopalErrorHandler)
+
 
 
     // 404 Router 
@@ -159,9 +162,17 @@ async function test() {
         })
     });
 
-    app.listen(port, () => {
-        console.log("===================================")
-        console.log(`server is runing on $(port)🚀`)
-        console.log("===================================")
-    });
+    
+
+// start HTTP server
+const httpServer = app.listen(port, () => {
+  console.log("===================================");
+  console.log(`🚀 server is running on port ${port}`);
+  console.log("===================================");
+});
+
+intializeIo(httpServer)
+
+
+
 }

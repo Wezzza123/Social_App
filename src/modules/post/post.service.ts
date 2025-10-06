@@ -12,7 +12,7 @@ import { LikePostQueryInputDto } from "./post.dto";
 
 class PostService {
   private userModel = new UserRepository(UserModel);
-  private postModel = new UserRepository(PostModel);
+  private postModel = new UserRepository();
 
   constructor() {}
 

@@ -12,10 +12,18 @@ import { ApplicationException, BadRequestException, NotFoundException } from "..
 import { UserRepository } from "../../DataBase/repository/user.repository";
 import type { JwtPayload } from "jsonwebtoken";
 import { succsesResponse } from "../../utils/response/success.response";
+import { PostModel } from "../../DataBase/models/post.model";
+import { ChatModel } from "../../DataBase/models/chat.model";
+import { ChatRepository, PostRepository } from "../../DataBase/repository";
+import{ Types} from "mongoose"
 
 class UserServise {
 
     private usermodel = new UserRepository(UserModel)
+    private postmodel = new PostRepository(PostModel)
+    private chatmodel = new ChatRepository(ChatModel)
+    
+    
     constructor() { }
 
     profile = async (req: Request, res: Response): Promise<Response> => {
@@ -33,6 +41,12 @@ class UserServise {
             }
             safeUser.coverImages = keys;
         }
+        const groups = await this.chatmodel.find({
+            filter:{
+                participants:{$in:req.user?._id as Types.ObjectId},
+                group: {$exists:true},
+            }
+        })
 
 
         return succsesResponse({
@@ -207,7 +221,7 @@ class UserServise {
             throw new BadRequestException("Cannot Delete Not Freezed Account");
         }
 
-        const deletedUser = await this.usermodel.deleteOne({ _id: userId });
+        const deletedUser = await this.usermodel.deleteOne({ filter: { _id: userId } });
 
         if (!deletedUser.deletedCount) {
             throw new BadRequestException("Faild To Delete User")

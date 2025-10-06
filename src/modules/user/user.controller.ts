@@ -5,8 +5,11 @@ import { cloudFileUpload, fileValidation, StorageEnum } from "../../utils/multer
 import { validation } from "../../middleware/validation.middleware";
 import * as usersValidation from "./user.validation";
 import { endPoints } from "./user.authorization";
+import { userRouter } from "..";
+import { chatRouter } from "../chat";
 
 const usersRouter = Router();
+userRouter.get("/:uderID/chat", chatRouter)
 
 usersRouter.get("/profile", authenticationMiddleware(), usersService.profile);
 
